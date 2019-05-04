@@ -8,7 +8,7 @@ class ServerKill:
         self.dict02 = {}
         self.dict01 = self.dict02.copy()
 
-    def do_kill(self, id, sockfd, addr, value, dict01, list01,do_hp):
+    def do_kill(self, id, sockfd, addr, value, dict01, list01, do_hp):
         print(value)
         if abs(int(value[1])) == 1 or abs(int(value[1])) == 16:
             data = self.get_where(id, int(value[2]), list01, sockfd, dict01)
@@ -28,7 +28,7 @@ class ServerKill:
         if i:
             do_hp(i)
         else:
-            return 
+            return
 
     def choose_player(self, value, dict01, msg, sockfd, addr):
         data = value.split(" ")

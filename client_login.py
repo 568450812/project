@@ -11,7 +11,9 @@ class ClientL:
         value = "L %s %s" % (name, passwd)
         self.sockfd.send(value, self.addr)
         data, addr = self.sockfd.recv()
-        if data == "OK":
+        data = data.split(" ")
+        if data[0] == "OK":
+            self.addr = ("0.0.0.0",int(data[1]))
             print("匹配中")
             self.choose_hero()
         else:
@@ -35,7 +37,7 @@ class ClientL:
     def recv_hero(self):
         data, addr = self.sockfd.recv()  # 服务端返回一个英雄
         print(data)
-        self.hero = eval(data)  # 绑定英雄类
+        self.hero = eval("%s(self.addr)"%data)  # 绑定英雄类
 
 if __name__ == "__main__":
     s = ClientL()

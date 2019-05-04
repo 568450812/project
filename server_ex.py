@@ -1,5 +1,5 @@
 class ServerEX:
-    def check_card(self, card, list01, card_list, sockfd, addr, dict02, dict01, dict03,do_hp):
+    def check_card(self, card, list01, card_list, sockfd, addr, dict02, dict01, dict03, do_hp):
         if abs(int(card)) == 4:
             self.wuzhong(card_list, sockfd, addr)
         elif abs(int(card)) == 5:
@@ -15,7 +15,7 @@ class ServerEX:
         elif abs(int(card)) == 11:
             self.juedou(list01, sockfd, addr, dict03, dict02)
         elif abs(int(card)) == 12:
-            self.wugu(card_list,sockfd,list01,dict03)
+            self.wugu(card_list, sockfd, list01, dict03)
         elif abs(int(card)) == 13:
             pass
         elif abs(int(card)) == 14:
@@ -99,26 +99,18 @@ class ServerEX:
                 dict02[msg] -= 1
                 return
 
-    def wugu(self,card_list,sockfd,list01,dict03):
-        list02 = [card_list.pop(-1),card_list.pop(-2),card_list.pop(-3),card_list.pop(-4),card_list.pop(-5)]
+    def wugu(self, card_list, sockfd, list01, dict03):
+        list02 = [card_list.pop(-1), card_list.pop(-2), card_list.pop(-3), card_list.pop(-4), card_list.pop(-5)]
         list03 = list01.copy()
-        list03.insert(0,self.find_play(dict03,list01))
+        list03.insert(0, self.find_play(dict03, list01))
         for i in list03:
             value = " ".join(list02)
-            sockfd.send("WG %s"%value,dict03[i])
-            data,addr = sockfd.recv()
+            sockfd.send("WG %s" % value, dict03[i])
+            data, addr = sockfd.recv()
             list02.remove(data)
 
-    def find_nohp(self,dict02):
+    def find_nohp(self, dict02):
         for i in dict02:
             if dict02[i] == 0:
                 return i
         return False
-
-
-
-
-
-
-
-

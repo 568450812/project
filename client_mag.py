@@ -4,9 +4,9 @@ from client_kill import *
 
 
 class ClientM:
-    def __init__(self):
+    def __init__(self,addr):
         self.sockfd = Connect()  # 建立连接
-        self.addr = ("0.0.0.0", 10010)
+        self.addr = addr
         self.by_kill = ClientByKill()  # 收到杀的处理
         self.kill = ClientKill()  # 出杀的处理
         self.card_list = []  # 手牌列表

@@ -2,20 +2,20 @@ import random
 
 
 class ClientByKill:
-    def do_kill(self,value,weapon_dict,sockfd,addr,card_list):
-        print(value,weapon_dict,addr,card_list)
+    def do_kill(self, value, weapon_dict, sockfd, addr, card_list):
+        print(value, weapon_dict, addr, card_list)
         if abs(int(value)) == 17:
             weapon_dict["mount"] = None
-            self.do_armor(2,sockfd,card_list,addr,weapon_dict,value)
-        elif 18<= abs(int(value)) <= 20:
             self.do_armor(2, sockfd, card_list, addr, weapon_dict, value)
-        elif abs(int(value)) == 1 or abs(int(value)) ==16 or abs(int(value)) ==22:
+        elif 18 <= abs(int(value)) <= 20:
+            self.do_armor(2, sockfd, card_list, addr, weapon_dict, value)
+        elif abs(int(value)) == 1 or abs(int(value)) == 16 or abs(int(value)) == 22:
             print("被杀")
             self.do_armor(2, sockfd, card_list, addr, weapon_dict, value)
         elif abs(int(value)) == 21:
-            self.deal_card(2,sockfd,card_list,addr)
+            self.deal_card(2, sockfd, card_list, addr)
 
-    def deal_card(self, num,sockfd,card_list,addr):
+    def deal_card(self, num, sockfd, card_list, addr):
         print("判断是否出闪")
         for i in card_list:
             if abs(int(i)) == num:
@@ -30,9 +30,9 @@ class ClientByKill:
         print("手牌中没有闪")
         sockfd.send("None", addr)
 
-    def do_armor(self,num,sockfd,card_list,addr,weapon_dict,value):
+    def do_armor(self, num, sockfd, card_list, addr, weapon_dict, value):
         if weapon_dict["armor"] == "23":
-            value = random.randint(1,10)
+            value = random.randint(1, 10)
             if value < 6:
                 sockfd.send("True", addr)
                 print("八卦生效")
@@ -47,12 +47,3 @@ class ClientByKill:
                 self.deal_card(num, sockfd, card_list, addr)
         else:
             self.deal_card(num, sockfd, card_list, addr)
-
-
-
-
-
-
-
-
-

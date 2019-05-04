@@ -33,7 +33,6 @@ class MenberManage:
     def select_hero(self,id):
         value = "select * from hero where id = '%s'"%id
         result = self.mysql.select(value)
-        print(result)
         return result[0][1],result[0][2]
 
 
