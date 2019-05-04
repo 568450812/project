@@ -67,6 +67,7 @@ class ServerM:
             data = "P %s %s %s %s" % (
                 self.card_list.pop(-1), self.card_list.pop(-2), self.card_list.pop(-3), self.card_list.pop(-4))
             self.sockfd.send(data, self.dict01[i])
+            print("已经发送")
 
     # 将3个英雄编号随机发送给玩家
     def send_hero(self):
@@ -83,6 +84,7 @@ class ServerM:
 
     # 等待所有用户选择英雄并通过数据库连接返回英雄
     def recv_hero(self):
+        self.dict01.clear()
         for i in range(5):
             data, addr = self.sockfd.recv()
             print(data)
@@ -90,6 +92,9 @@ class ServerM:
             self.hp_dict(addr,hp)
             print(value)
             self.sockfd.send(value, addr)
+            msg,addr = self.sockfd.recv()
+            self.give_id(addr)
+
 
     def do_request(self):
         # self.do_apply()

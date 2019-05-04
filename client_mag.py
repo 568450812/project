@@ -1,5 +1,4 @@
 from connect03 import *
-from hero_01 import *
 from client_bykill import *
 from client_kill import *
 
@@ -10,45 +9,14 @@ class ClientM:
         self.addr = ("0.0.0.0", 10010)
         self.by_kill = ClientByKill()  # 收到杀的处理
         self.kill = ClientKill()  # 出杀的处理
-        self.hero = None  # 英雄类
         self.card_list = []  # 手牌列表
         self.status_list = []  # 判定列表
         self.weapon_dict = {"weapon": None, "mount": None, "armor": None}  # 装备字典
         self.used_list = []  # 用过的牌的列表
 
-    # 登录操作
-    def do_login(self, name, passwd):
-        value = "L %s %s" % (name, passwd)
-        self.sockfd.send(value, self.addr)
-        data, addr = self.sockfd.recv()
-        if data == "OK":
-            print("匹配中")
-            self.choose_hero()
-        else:
-            print(data)
-
-    # 根据服务端发送英雄选择英雄
-    def choose_hero(self):
-        data, addr = self.sockfd.recv()  # 客户端发送三个英雄
-        herolist = data.split(" ")
-        print(herolist[0], herolist[1], herolist[2],herolist[3])
-        while True:
-            value = input("请选择武将:")
-            if value in herolist:
-                print(self.addr)
-                self.sockfd.send(value, self.addr)  # 选择其中一个发送给服务端
-                return
-            else:
-                print("输入有误")
-
-    # 接收英雄类
-    def recv_hero(self):
-        data, addr = self.sockfd.recv()  # 服务端返回一个英雄
-        print(data)
-        self.hero = eval(data)  # 绑定英雄类
-
     # 处理客户端请求
     def do_request(self):
+        self.sockfd.send("OK",self.addr)
         while True:
             data, addr = self.sockfd.recv()
             value = data.split(" ")
@@ -308,8 +276,3 @@ class ClientM:
             return "mount"
 
 
-if __name__ == "__main__":
-    s = ClientM()
-    s.do_login("123456", "123456")
-    s.recv_hero()
-    s.do_request()
