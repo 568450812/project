@@ -137,8 +137,7 @@ class ServerM:
     def do_putcard(self):
         while True:
             for i in self.player_list:
-                data = "Q %s %s" % (self.card_list[-1], self.card_list[-2])
-                self.sockfd.send(data, self.dict01[i])
+                self.put_card(i,card_list)
                 while True:
                     value, addr = self.sockfd.recv()
                     id = self.find_player(addr)
@@ -187,10 +186,15 @@ class ServerM:
         self.actor_dict[self.do_actor(id)].remove(id)
         self.game_result()
 
+    def put_card(self,i,card_list):
+        if len(self.card_list) <= 5:
+            random.shuffle(card_list)
+            self.card_list += card_list
+        data = "Q %s %s" % (self.card_list[-1], self.card_list[-2])
+        self.sockfd.send(data, self.dict01[i])
 
 
 
-            # if abs(int(value)) == 1:
 
 
 if __name__ == "__main__":
