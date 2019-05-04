@@ -86,7 +86,8 @@ class ServerM:
         for i in range(5):
             data, addr = self.sockfd.recv()
             print(data)
-            value = self.mysql.select_hero(data)
+            value,hp = self.mysql.select_hero(data)
+            self.hp_dict(addr,hp)
             print(value)
             self.sockfd.send(value, addr)
 
@@ -193,6 +194,10 @@ class ServerM:
         data = "Q %s %s" % (self.card_list[-1], self.card_list[-2])
         self.sockfd.send(data, self.dict01[i])
 
+    def hp_dict(self,addr,hp):
+        for i in self.dict01:
+            if self.dict01[i] == addr:
+                self.kill.dict02[i] = int(hp)
 
 
 

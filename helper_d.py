@@ -31,13 +31,18 @@ class MenberManage:
 
     #　根据武将编号选择武将类
     def select_hero(self,id):
-        value = "select msg from hero where id = '%s'"%id
+        value = "select * from hero where id = '%s'"%id
         result = self.mysql.select(value)
         print(result)
-        return result[0][0]
+        return result[0][1],result[0][2]
 
 
-
+if __name__ == "__main__":
+    id = "6"
+    s = MenberManage()
+    a,b = s.select_hero(id)
+    print(a)
+    print(b)
 
 
 
