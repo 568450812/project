@@ -1,28 +1,48 @@
 from connect03 import *
 from client_bykill import *
 from client_kill import *
-
+from socket import *
+from multiprocessing import Process
 
 class ClientM:
-    def __init__(self,addr):
+    def __init__(self,port,data):
         self.sockfd = Connect()  # 建立连接
-        self.addr = addr
+        self.addr = (("0.0.0.0",port))
+        self.port = port +1
         self.by_kill = ClientByKill()  # 收到杀的处理
         self.kill = ClientKill()  # 出杀的处理
         self.card_list = []  # 手牌列表
         self.status_list = []  # 判定列表
         self.weapon_dict = {"weapon": None, "mount": None, "armor": None}  # 装备字典
         self.used_list = []  # 用过的牌的列表
+        self.s = socket(AF_INET, SOCK_DGRAM)
+        self.data = data
+
+    def connect(self):
+        data, addr = self.s.recvfrom(1024)
+        print(data.decode())
+
+
+    def do_process(self):
+        p = Process(target=self.connect)
+        p.daemon = True
+        p.start()
+
+
+
 
     # 处理客户端请求
     def do_request(self):
-        self.sockfd.send("OK",self.addr)
+        print(self.port)
+        print(self.addr)
+        self.sockfd.send("%s"%self.data,self.addr)
         while True:
             data, addr = self.sockfd.recv()
             value = data.split(" ")
             print(value)
             if value[0] == "P":  # 初始发牌时的协议　将４张牌存入手牌
                 self.card_list = [value[1], value[2], value[3], value[4]]  # 客户端发牌
+                self.s.sendto(b"OK",("0.0.0.0",self.port))
                 print(self.card_list)
             elif value[0] == "Q":  # 回合开始时出牌指令
                 self.card_list += [value[1], value[2]]  # 客户端发牌　
@@ -274,5 +294,6 @@ class ClientM:
             return "armor"
         elif 25 <= int(value) <= 28:
             return "mount"
+
 
 

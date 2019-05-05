@@ -1,13 +1,14 @@
 """
 服务器端用户处理
 """
+from socket import *
 from mysql_05 import *
 from helper_d import *
 from connect03 import *
 import random
 from seaver_kill import *
 from server_ex import *
-import select
+from threading import Thread
 from multiprocessing import Process
 
 address = "0.0.0.0"
@@ -20,7 +21,6 @@ class ServerM:
         self.mysql = MenberManage()  # 连接数据库
         self.sockfd = Connect()  # 调用连接
         self.sockfd.bind(addr)
-        self.s = self.sockfd.sockfd
         self.card_list = card_list  # 调用牌库
         self.hero_list = hero_list  # 调用英雄列表
         self.dict01 = {}  # 存储位置和地址
@@ -30,6 +30,7 @@ class ServerM:
         self.ex = ServerEX()
         self.port = port01
         self.dict02 = {}
+        self.dict03 = {}
 
     def do_dict(self):
         list01 = self.player_list.copy()
@@ -51,7 +52,7 @@ class ServerM:
     def do_login(self, id, passwd, addr):
         if self.mysql.select_passwd(id, passwd):  # 查询用户名密码是否匹配　匹配返回TRUE
             self.give_id(addr, self.dict02)
-            self.sockfd.send("OK %d" % (self.port + 1), addr)
+            self.sockfd.send("OK %d" % (self.port + 2), addr)
         else:
             value = "登录失败帐号或密码错误"
             self.sockfd.send(value, addr)
@@ -80,10 +81,11 @@ class ServerM:
         random.shuffle(self.hero_list)
         for i in self.dict01:
             if i == "p1":
-                self.sockfd.send("1 2 3 a", self.dict01[i])
+                self.sockfd.send("1 2 3 a p1", self.dict01[i])
             else:
-                data = "%s %s %s %s" % (
-                    self.hero_list.pop(-1), self.hero_list.pop(-2), self.hero_list.pop(-3), self.do_actor(i))
+                data = "%s %s %s %s %s" % (
+                    self.hero_list.pop(-1), self.hero_list.pop(-2),
+                    self.hero_list.pop(-3), self.do_actor(i),i)
                 print(data)
                 self.sockfd.send(data, self.dict01[i])
 
@@ -99,9 +101,7 @@ class ServerM:
             print(value)
             self.sockfd.send(value, addr)
             msg, addr = self.sockfd.recv()
-            self.give_id(addr, self.dict01)
-            print("新字典")
-            print(self.dict01)
+            self.dict01[msg] = addr
             self.hp_dict(addr, hp)
 
     def do_request(self, addr):
@@ -110,9 +110,11 @@ class ServerM:
         self.sockfd.bind(addr)
         print(addr)
         print(self.dict01)
+        self.thread()
         self.send_hero()  # 选择英雄
         self.recv_hero()  # 发送英雄
         self.send_play()
+
         self.do_putcard()
 
     def find_player(self, addr):
@@ -168,7 +170,7 @@ class ServerM:
                         self.sockfd.send("C", addr)
                     elif data[0] == "EX":
                         if self.get_wuxie(list01, id, value):
-                            self.ex.check_card(data[1], list01, self.card_list, self.sockfd, addr, \
+                            self.ex.check_card(data[1], list01, self.card_list, self.sockfd, addr,
                                                self.kill.dict02, self.kill.dict01, self.dict01, self.do_hp)
                             if abs(int(data[1])) != 4:
                                 self.sockfd.send("C", addr)
@@ -222,33 +224,61 @@ class ServerM:
         p.daemon = True
         p.start()
 
+    def do_send(self):
+        self.s = socket(AF_INET, SOCK_DGRAM)
+        self.s.bind((address,self.port+1))
+        print("bbbbbb")
+        for i in range(5):
+            data,addr = self.s.recvfrom(1024)
+            print(data)
+            self.give_id(addr,self.dict03)
+            print("最牛逼的字典", self.dict03)
 
 
-        # def do_select(self):
-        #     rlist = [self.s]
-        #     wlist = []
-        #     xlist = []
-        #     while True:
-        #         rs,ws,xs = select.select(rlist,wlist,xlist)
-        #         for r in rs:
-        #             print("进来啦")
-        #             print(self.port)
-        #             if r is self.s:
-        #                 self.do_connect()
-        #                 self.port += 1
-        #                 self.do_process(("0.0.0.0",self.port))
-        # for w in ws:
-        #     if w is self.s:
-        #         self.do_request()
+    def thread(self):
+        t = Thread(target=self.do_send)
+        t.daemon = True
+        t.start()
 
-    def do_select(self):
+
+
+    # def do_select(self):
+    #     sockfd = socket(AF_INET, SOCK_DGRAM)
+    #     sockfd.bind((address,self.port +1))
+    #     rlist = [self.sockfd.sockfd,sockfd]
+    #     wlist = []
+    #     xlist = []
+    #     while True:
+    #         rs,ws,xs = select.select(rlist,wlist,xlist)
+    #         for r in rs:
+    #             print("进来啦")
+    #             print(self.port)
+    #             if r is self.sockfd.sockfd:
+    #                 print("aaaaa")
+    #                 self.do_putcard()
+    #                 wlist.append(sockfd)
+    #             if r is sockfd:
+    #                 data,addr = r.recvfrom(1024)
+    #                 print(data)
+    #                 self.give_id(addr,self.dict03)
+    #                 print("最牛逼的字典", self.dict03)
+    #         for w in ws:
+    #             if w is sockfd:
+    #                 for i in self.dict03:
+    #                     value = "你们好"
+    #                     w.sendto(value.encode(),self.dict03[i])
+    #                 wlist.remove(sockfd)
+
+
+
+    def main(self):
         while True:
             print("进来啦")
             self.do_connect()
-            self.port += 1
+            self.port += 2
             self.do_process(("0.0.0.0", self.port))
 
 
 if __name__ == "__main__":
     s = ServerM()
-    s.do_select()
+    s.main()

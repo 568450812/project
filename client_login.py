@@ -6,6 +6,7 @@ class ClientL:
         self.sockfd = Connect()
         self.addr = (("0.0.0.0",10010))
         self.hero = None
+        self.data = None
     # 登录操作
     def do_login(self, name, passwd):
         value = "L %s %s" % (name, passwd)
@@ -13,6 +14,7 @@ class ClientL:
         data, addr = self.sockfd.recv()
         data = data.split(" ")
         if data[0] == "OK":
+            self.port = int(data[1])
             self.addr = ("0.0.0.0",int(data[1]))
             print("匹配中")
             self.choose_hero()
@@ -24,6 +26,7 @@ class ClientL:
         data, addr = self.sockfd.recv()  # 客户端发送三个英雄
         herolist = data.split(" ")
         print(herolist[0], herolist[1], herolist[2],herolist[3])
+        self.data = herolist[4]
         while True:
             value = input("请选择武将:")
             if value in herolist:
@@ -37,10 +40,11 @@ class ClientL:
     def recv_hero(self):
         data, addr = self.sockfd.recv()  # 服务端返回一个英雄
         print(data)
-        self.hero = eval("%s(self.addr)"%data)  # 绑定英雄类
+        self.hero = eval("%s(self.port,self.data)"%data)  # 绑定英雄类
 
 if __name__ == "__main__":
     s = ClientL()
     s.do_login("123456", "123456")
     s.recv_hero()
+    s.hero.do_process()
     s.hero.do_request()
