@@ -9,7 +9,7 @@ class ClientByKill:
             self.do_armor(2, sockfd, card_list, addr, weapon_dict, value)
         elif 18 <= abs(int(value)) <= 20:
             self.do_armor(2, sockfd, card_list, addr, weapon_dict, value)
-        elif abs(int(value)) == 1 or abs(int(value)) == 16 or abs(int(value)) == 22:
+        elif abs(int(value)) == 1 or abs(int(value)) == 16 or abs(int(value)) == 22 or abs(int(value)) == 29:
             print("被杀")
             self.do_armor(2, sockfd, card_list, addr, weapon_dict, value)
         elif abs(int(value)) == 21:

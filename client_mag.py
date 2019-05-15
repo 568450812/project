@@ -176,9 +176,9 @@ class ClientM:
                 else:
                     self.choose_card(data)
                     return
-            # elif data not in self.card_list:
-            #     print("输入有误")
-            #     continue
+            elif data not in self.card_list:
+                print("输入有误")
+                continue
             else:
                 self.choose_card(data)
                 return
@@ -212,7 +212,7 @@ class ClientM:
             self.card_list.remove(data)
         elif 16 <= abs(int(data)) <= 28:  # 装备牌　直接存入装备字典
             self.weapon_dict[self.do_dict(data)] = data
-            # self.card_list.remove(data)
+            self.card_list.remove(data)
             print(self.weapon_dict)
             self.do_card()
         else:

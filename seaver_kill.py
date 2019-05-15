@@ -6,7 +6,7 @@ class ServerKill:
         self.p4_dict = {"p2": 2, "p3": 1, "p1": 2, "p5": 1}
         self.p5_dict = {"p2": 2, "p3": 2, "p4": 1, "p1": 1}
         self.dict02 = {}
-        self.dict01 = self.dict02.copy()
+        self.dict01 = {}
 
     def do_kill(self, id, sockfd, addr, value, dict01, list01, do_hp):
         print(value)

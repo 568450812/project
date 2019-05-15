@@ -25,13 +25,14 @@ class ServerM:
         self.hero_list = hero_list  # 调用英雄列表
         self.dict01 = {}  # 存储位置和地址
         self.player_list = ["p1", "p2", "p3", "p4", "p5"]  # 位置列表
-        self.actor_dict = self.do_dict()
-        self.kill = ServerKill()
-        self.ex = ServerEX()
-        self.port = port01
-        self.dict02 = {}
+        self.actor_dict = self.do_dict() #　给所有玩家分配身份
+        self.kill = ServerKill() #绑定杀类
+        self.ex = ServerEX() #绑定技能类
+        self.port = port01 #端口号
+        self.dict02 = {} #用于导入客户端
         self.dict03 = {}
 
+    # 随机给所有人分配身份
     def do_dict(self):
         list01 = self.player_list.copy()
         random.shuffle(list01)
@@ -43,6 +44,7 @@ class ServerM:
         dict01["d"].append(list01[-4])
         return dict01
 
+    # 根据玩家ｉｄ提取身份
     def do_actor(self, id):
         for i in self.actor_dict:
             if id in self.actor_dict[i]:
@@ -78,56 +80,50 @@ class ServerM:
     # 将3个英雄编号随机发送给玩家
     def send_hero(self):
         self.hero_list = self.hero_list[3:]
-        random.shuffle(self.hero_list)
+        random.shuffle(self.hero_list) #　将武将列表打乱
         for i in self.dict01:
             if i == "p1":
                 self.sockfd.send("1 2 3 a p1", self.dict01[i])
             else:
                 data = "%s %s %s %s %s" % (
-                    self.hero_list.pop(-1), self.hero_list.pop(-2),
+                    self.hero_list.pop(-1), self.hero_list.pop(-2), # 分别是三个武将，身份，和玩家编号
                     self.hero_list.pop(-3), self.do_actor(i),i)
                 print(data)
                 self.sockfd.send(data, self.dict01[i])
 
     # 等待所有用户选择英雄并通过数据库连接返回英雄
     def recv_hero(self):
-        print("原字典")
-        print(self.dict01)
-        self.dict01.clear()
+        self.dict01.clear() # 将玩家登录字典清空
         for i in range(5):
             data, addr = self.sockfd.recv()
-            print(data)
             value, hp = self.mysql.select_hero(data)
-            print(value)
             self.sockfd.send(value, addr)
             msg, addr = self.sockfd.recv()
-            self.dict01[msg] = addr
+            self.dict01[msg] = addr # 将玩家进入游戏新的地址存入字典
             self.hp_dict(addr, hp)
 
     def do_request(self, addr):
-        # self.do_apply()
-        self.sockfd = Connect()
-        self.sockfd.bind(addr)
-        print(addr)
-        print(self.dict01)
-        self.thread()
+        self.sockfd = Connect() # 在进程里创建新的套接字
+        self.sockfd.bind(addr) #　绑定新的字典
+        self.thread() # 在进程中创建新的线程用来循环发送实时信息
         self.send_hero()  # 选择英雄
         self.recv_hero()  # 发送英雄
-        self.send_play()
+        self.send_play() #初始发送4张牌
+        self.do_putcard()  #正式进入游戏
 
-        self.do_putcard()
-
+    # 根据玩家地址找出玩家位置
     def find_player(self, addr):
         for i in self.dict01:
             if self.dict01[i] == addr:
                 return i
 
-    def tao(self, addr):
-        data = self.find_player(addr)
+    #　玩家使用桃时执行
+    def tao(self, data):
         if self.kill.dict02[data] < self.kill.dict01[data]:
             self.kill.dict02[data] += 1
             print(self.kill.dict02)
 
+    # 当一位玩家使用锦囊牌时　向所有玩家发送信号
     def get_wuxie(self, list01, id, value):
         for i in list01:
             self.sockfd.send("W %s %s" % (id, value), self.dict01[i])
@@ -149,12 +145,14 @@ class ServerM:
                     self.dict02.clear()
                     return
 
+    # 根据出牌玩家　创建顺序执行列表
     def do_list(self, id):
         list01 = self.player_list.copy()
         num = list01.index(id)
         list02 = list01[num + 1:] + list01[:num]
         return list02
 
+    # 执行出牌收牌函数
     def do_putcard(self):
         while True:
             for i in self.player_list:
@@ -177,7 +175,7 @@ class ServerM:
                         else:
                             self.sockfd.send("C", addr)
                     elif data[0] == "T":
-                        self.tao(addr)
+                        self.tao(id)
                         self.sockfd.send("C", addr)
                     elif data[0] == "#":
                         self.sockfd.send(str(self.kill.dict02[i]), addr)
@@ -218,6 +216,8 @@ class ServerM:
         for i in self.dict01:
             if self.dict01[i] == addr:
                 self.kill.dict02[i] = int(hp)
+                if len(self.kill.dict02) == 5:
+                    self.kill.dict01 = self.kill.dict02.copy()
 
     def do_process(self, addr):
         p = Process(target=self.do_request, args=(addr,))
@@ -227,7 +227,6 @@ class ServerM:
     def do_send(self):
         self.s = socket(AF_INET, SOCK_DGRAM)
         self.s.bind((address,self.port+1))
-        print("bbbbbb")
         for i in range(5):
             data,addr = self.s.recvfrom(1024)
             print(data)
